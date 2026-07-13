@@ -25,7 +25,8 @@ class Station extends Model
     use Auditable, HasFactory, HasUuids, SoftDeletes;
 
     protected $fillable = [
-        'partner_id', 'brand_id', 'name', 'station_number',
+        'partner_id', 'brand_id', 'name', 'station_number', 'source_provider',
+        'source_station_id',
         'sales_channel', 'ownership_type', 'district', 'district_description',
         'region', 'region_manager', 'station_number_fuel', 'station_number_shop',
         'has_toll_terminal', 'street', 'house_number', 'postal_code', 'city',

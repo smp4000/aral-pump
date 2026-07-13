@@ -15,6 +15,8 @@ und einer MySQL-kompatiblen Datenbank.
 - getrennte Filament-Bereiche für Plattform-Administration und Partner
 - zentrale Verwaltung aller Partner, Benutzer und Tankstellen
 - Partnerverwaltung der ausschließlich eigenen Tankstellen
+- geführter Anlage-Wizard: PLZ-Suche mit 5/10/15/20/25-km-Auswahl
+- automatische Übernahme von Marke, Adresse, GPS-Position und Kraftstoffarten
 - vollständige Tankstellen-Stammdaten in gegliederten Formular-Tabs
 - zentral gepflegte Markenliste mit 30 Marken, Reihenfolge, Farben und Logos
 - öffentliche Stations-UUID, Soft Deletes und unveränderliches Audit-Log
@@ -37,6 +39,25 @@ php artisan serve
 
 Die Standardkonfiguration erwartet die lokale Datenbank `aral_pump` auf Port
 3306. Zugangsdaten können in der lokalen `.env` angepasst werden.
+
+### Tankstellensuche einrichten
+
+Der Anlage-Wizard nutzt OpenStreetMap-Standortdaten. Nominatim löst die
+eingegebene Postleitzahl auf, Overpass sucht Tankstellen im gewählten Radius.
+Es ist kein Tankerkönig-Schlüssel erforderlich. Echtzeitpreise gehören bewusst
+nicht zu dieser Standortquelle und bleiben bei der Anlage leer.
+
+```dotenv
+STATION_GEOCODER_URL=https://nominatim.openstreetmap.org/search
+OVERPASS_API_URL=https://overpass-api.de/api/interpreter
+OPENSTREETMAP_USER_AGENT="StationDesk/1.0 (+https://ihre-domain.de; kontakt@ihre-domain.de)"
+```
+
+Nach einer Konfigurationsänderung muss `php artisan config:clear` ausgeführt
+werden. Suchergebnisse werden zwischengespeichert, die OSM-Attribution wird im
+Wizard angezeigt und die externe Stations-ID verhindert Dubletten. Für einen
+größeren Produktivbetrieb sollten eigene oder kommerzielle Geocoding- und
+Overpass-Instanzen konfiguriert werden.
 
 ## Zugänge
 

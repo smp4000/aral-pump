@@ -95,7 +95,12 @@ class StationMasterDataTest extends TestCase
         $this->actingAs($admin)
             ->get('/admin/stations/create')
             ->assertOk()
-            ->assertSee('Tankstellen-Stammdaten');
+            ->assertSee('Standort suchen')
+            ->assertSee('5 km')
+            ->assertSee('10 km')
+            ->assertSee('15 km')
+            ->assertSee('20 km')
+            ->assertSee('25 km');
 
         $station = $this->createStation();
         $owner = User::factory()->create([

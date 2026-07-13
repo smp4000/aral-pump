@@ -35,4 +35,26 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Tankstellensuche beim Anlegen einer Station
+    |--------------------------------------------------------------------------
+    |
+    | Die PLZ wird per Nominatim geocodiert. Overpass sucht anschließend nach
+    | OSM-Objekten mit `amenity=fuel`. Alle URLs bleiben austauschbar, damit in
+    | einem größeren Produktivbetrieb eigene Instanzen nutzbar sind.
+    |
+    */
+    'station_geocoder' => [
+        'url' => env('STATION_GEOCODER_URL', 'https://nominatim.openstreetmap.org/search'),
+    ],
+
+    'overpass' => [
+        'url' => env('OVERPASS_API_URL', 'https://overpass-api.de/api/interpreter'),
+    ],
+
+    'openstreetmap' => [
+        'user_agent' => env('OPENSTREETMAP_USER_AGENT', 'StationDesk/1.0 (+'.env('APP_URL', 'http://localhost').')'),
+    ],
+
 ];

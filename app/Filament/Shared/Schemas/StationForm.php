@@ -14,6 +14,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
@@ -27,6 +28,20 @@ use Filament\Schemas\Schema;
 class StationForm
 {
     public static function configure(Schema $schema, bool $includePartner = false): Schema
+    {
+        return $schema->components(self::components($includePartner));
+    }
+
+    /**
+     * Liefert die Formularbestandteile getrennt vom Schema zurück.
+     *
+     * Dadurch kann dasselbe ausführliche, deutsch beschriftete Tab-Formular
+     * sowohl beim normalen Bearbeiten als auch als Schritt des Anlage-Wizards
+     * verwendet werden, ohne Felder doppelt zu pflegen.
+     *
+     * @return array<int, Component>
+     */
+    public static function components(bool $includePartner = false): array
     {
         $generalFields = [];
 
@@ -64,7 +79,7 @@ class StationForm
             Toggle::make('is_active')->label('Tankstelle ist aktiv')->default(true),
         ]);
 
-        return $schema->components([
+        return [
             Tabs::make('Tankstellen-Stammdaten')
                 ->columnSpanFull()
                 ->persistTabInQueryString()
@@ -154,7 +169,7 @@ class StationForm
                         KeyValue::make('settings')->label('Erweiterte Einstellungen')->columnSpanFull(),
                     ]),
                 ]),
-        ]);
+        ];
     }
 
     /** @return array<string, string> */
