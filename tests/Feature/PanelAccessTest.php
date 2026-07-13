@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Filament\Partner\Resources\Stations\StationResource;
+use App\Models\LandingPageSetting;
 use App\Models\Partner;
 use App\Models\Station;
 use App\Models\User;
@@ -25,6 +26,20 @@ class PanelAccessTest extends TestCase
         ]);
 
         $this->actingAs($admin)->get('/admin')->assertOk();
+    }
+
+    public function test_platform_admin_can_edit_all_landing_page_sections(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'platform_admin',
+            'is_active' => true,
+        ]);
+        $settings = LandingPageSetting::query()->create(LandingPageSetting::defaultContent());
+
+        $this->actingAs($admin)
+            ->get("/admin/landing-page-settings/{$settings->id}/edit")
+            ->assertOk()
+            ->assertSee('Landingpage-Inhalte');
     }
 
     public function test_partner_station_resource_only_returns_own_stations(): void

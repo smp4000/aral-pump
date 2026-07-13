@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\LandingPageSetting;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -18,6 +19,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        LandingPageSetting::query()->firstOrCreate([], LandingPageSetting::defaultContent());
+
         User::query()->updateOrCreate([
             'email' => env('PLATFORM_ADMIN_EMAIL', 'admin@stationdesk.local'),
         ], [

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Filament\Partner\Pages\Auth\Register;
+use App\Models\LandingPageSetting;
 use App\Models\Partner;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -47,6 +48,19 @@ class PartnerRegistrationTest extends TestCase
         $this->assertTrue($partner->trial_ends_at->between(now()->addDays(29), now()->addDays(31)));
         $this->assertSame('partner_owner', $owner->role);
         $this->assertTrue($owner->is($partner->users()->first()));
+    }
+
+    public function test_landing_page_uses_content_maintained_by_admin(): void
+    {
+        $content = LandingPageSetting::defaultContent();
+        $content['general']['site_name'] = 'Individuelle Plattform';
+        $content['hero']['badge'] = 'Eigener Hinweis aus dem Adminbereich';
+        LandingPageSetting::query()->create($content);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('Individuelle Plattform')
+            ->assertSee('Eigener Hinweis aus dem Adminbereich');
     }
 
     public function test_expired_trial_is_retained_but_has_no_access(): void

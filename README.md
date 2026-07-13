@@ -7,6 +7,9 @@ und einer MySQL-kompatiblen Datenbank.
 ## Aktueller Funktionsumfang
 
 - moderne öffentliche Landingpage
+- Landingpage-Inhalte vollständig über den Plattform-Adminbereich pflegbar
+- Aral-blaues responsives Design mit Hero, Funktionen, Ablauf, Datenschutz,
+  Trial-Preisbox, Abschlussbereich und Footer
 - Selbstregistrierung neuer Tankstellenpartner
 - automatische 30-tägige Testphase
 - getrennte Filament-Bereiche für Plattform-Administration und Partner
@@ -23,6 +26,7 @@ composer install
 copy .env.example .env
 php artisan key:generate
 php artisan migrate --seed
+php artisan storage:link
 php artisan serve
 ```
 
@@ -32,6 +36,7 @@ Die Standardkonfiguration erwartet die lokale Datenbank `aral_pump` auf Port
 ## Zugänge
 
 - Plattform-Administration: `/admin`
+- Landingpage-Pflege: `/admin/landing-page-settings`
 - Partnerbereich: `/partner`
 - Partnerregistrierung: `/partner/register`
 
