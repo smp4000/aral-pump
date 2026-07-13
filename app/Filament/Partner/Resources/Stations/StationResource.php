@@ -5,6 +5,8 @@ namespace App\Filament\Partner\Resources\Stations;
 use App\Filament\Partner\Resources\Stations\Pages\CreateStation;
 use App\Filament\Partner\Resources\Stations\Pages\EditStation;
 use App\Filament\Partner\Resources\Stations\Pages\ListStations;
+use App\Filament\Partner\Resources\Stations\RelationManagers\BankAccountsRelationManager;
+use App\Filament\Partner\Resources\Stations\RelationManagers\UsersRelationManager;
 use App\Filament\Partner\Resources\Stations\Schemas\StationForm;
 use App\Filament\Partner\Resources\Stations\Tables\StationsTable;
 use App\Models\Station;
@@ -51,7 +53,8 @@ class StationResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            BankAccountsRelationManager::class,
+            UsersRelationManager::class,
         ];
     }
 

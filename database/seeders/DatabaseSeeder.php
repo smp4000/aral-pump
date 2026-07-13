@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(BrandSeeder::class);
+
         LandingPageSetting::query()->firstOrCreate([], LandingPageSetting::defaultContent());
 
         User::query()->updateOrCreate([

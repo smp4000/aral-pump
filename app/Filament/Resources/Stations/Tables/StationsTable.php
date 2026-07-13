@@ -20,8 +20,10 @@ class StationsTable
             ->columns([
                 TextColumn::make('name')->label('Tankstelle')->searchable()->sortable(),
                 TextColumn::make('partner.company_name')->label('Partner')->searchable()->sortable(),
-                TextColumn::make('brand')->label('Marke')->badge(),
+                TextColumn::make('brand.name')->label('Marke')->badge()->sortable(),
                 TextColumn::make('city')->label('Ort')->searchable(),
+                TextColumn::make('users_count')->label('Mitarbeiter')->counts('users'),
+                TextColumn::make('bank_accounts_count')->label('Bankkonten')->counts('bankAccounts'),
                 TextColumn::make('gps_radius_meters')->label('GPS-Radius')->suffix(' m'),
                 IconColumn::make('is_active')->label('Aktiv')->boolean(),
             ])

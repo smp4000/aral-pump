@@ -15,7 +15,12 @@ und einer MySQL-kompatiblen Datenbank.
 - getrennte Filament-Bereiche für Plattform-Administration und Partner
 - zentrale Verwaltung aller Partner, Benutzer und Tankstellen
 - Partnerverwaltung der ausschließlich eigenen Tankstellen
-- Marken-, Adress- und GPS-Stammdaten pro Tankstelle
+- vollständige Tankstellen-Stammdaten in gegliederten Formular-Tabs
+- zentral gepflegte Markenliste mit 30 Marken, Reihenfolge, Farben und Logos
+- öffentliche Stations-UUID, Soft Deletes und unveränderliches Audit-Log
+- GPS-Entfernungsberechnung sowie verschlüsselte MDE- und Drucker-Setup-Tokens
+- verschlüsselte, maskiert angezeigte Bankkonten pro Tankstelle
+- Zuordnung von Mitarbeitern zu mehreren Tankstellen mit Stationsrolle
 - serverseitig abgesicherte Mandantentrennung
 - Deaktivierung abgelaufener Konten ohne automatische Datenlöschung
 
