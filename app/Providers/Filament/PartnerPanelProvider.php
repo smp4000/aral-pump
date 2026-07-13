@@ -28,9 +28,14 @@ class PartnerPanelProvider extends PanelProvider
             ->path('partner')
             ->login()
             ->registration(Register::class)
-            ->brandName('Station Desk')
+            ->brandName('StationDesk Partner Portal')
+            ->brandLogo(fn () => view('filament.brand-logo'))
+            ->brandLogoHeight('2.5rem')
+            ->viteTheme('resources/css/filament/station-desk.css')
+            ->sidebarWidth('18rem')
+            ->maxContentWidth('full')
             ->colors([
-                'primary' => Color::Blue,
+                'primary' => Color::hex('#0050AA'),
             ])
             ->discoverResources(in: app_path('Filament/Partner/Resources'), for: 'App\Filament\Partner\Resources')
             ->discoverPages(in: app_path('Filament/Partner/Pages'), for: 'App\Filament\Partner\Pages')

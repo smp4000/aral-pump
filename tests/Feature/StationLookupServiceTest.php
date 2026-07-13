@@ -9,84 +9,93 @@ use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 /**
- * Prüft PLZ-Auflösung, echten Radius und Normalisierung der OSM-Daten,
- * ohne in der Testsuite Anfragen an gemeinschaftliche Server zu senden.
+ * Prüft offene und geschlossene Treffer sowie die vollständige Übernahme
+ * der Detaildaten von Benzinpreis-Aktuell.de, ohne echte Fremdaufrufe im Test.
  */
 class StationLookupServiceTest extends TestCase
 {
-    public function test_it_finds_and_normalizes_osm_stations_within_25_kilometres(): void
+    public function test_it_keeps_closed_stations_and_loads_all_detail_data(): void
     {
         config([
             'services.station_geocoder.url' => 'https://geocoder.test/search',
-            'services.overpass.url' => 'https://overpass.test/interpreter',
-            'services.openstreetmap.user_agent' => 'StationDesk-Test',
+            'services.benzinpreis_aktuell.url' => 'https://benzin.test',
+            'services.benzinpreis_aktuell.user_agent' => 'StationDesk-Test',
         ]);
+
+        $searchHtml = <<<'HTML'
+            <html><head><title>Dieselpreise 36100 Petersberg</title></head><body>
+            <div id="station-tabc12-petersberg-aral" class="ns_newsquare ns_count_0" data-mid="mts-open">
+                <div><em title="Dieselpreis">1.72</em><sup>9</sup></div>
+                <p><strong class="isstrong">ARAL Tankstelle Petersberg</strong><br>Petersberger Straße 101<span class="offenbis">22 Uhr</span></p>
+                <a href="preise-tabc12-petersberg-aral">mehr infos</a>
+            </div>
+            <div id="station-tdef34-fulda-esso" class="ns_newsquare ns_count_10000" data-mid="mts-closed">
+                <div><em title="Dieselpreis">-,--</em></div>
+                <p><strong class="isstrong">ESSO Tankstelle Fulda</strong><br>Beispielweg 5</p>
+                <a href="preise-tdef34-fulda-esso">mehr infos</a>
+            </div>
+            <section><ul><li>Stand: 13.07.2026, 21:59 Uhr</li></ul></section>
+            <h3 id="umkreis">Umkreis</h3>
+            </body></html>
+            HTML;
+
+        $detailHtml = <<<'HTML'
+            <html><head>
+            <meta property="place:location:latitude" content="50.5592300">
+            <meta property="place:location:longitude" content="9.7125200">
+            </head><body>
+            <div class="preis25 preis_benzin"><em>1,79<sup>9</sup></em></div>
+            <div class="preis25 preis_e10"><em>1,73<sup>9</sup></em></div>
+            <div class="preis25 preis_diesel"><em>1,72<sup>9</sup></em></div>
+            <h2>Wo finde ich die Tankstelle?</h2>
+            <p class="centerit">Petersberger Straße 101<br>36100 Petersberg<a href="maps">Navigation</a></p>
+            <section id="oeffnungszeiten" data-mtsk="mts-open">
+                <p class="e-otimes"><em>06:00 bis 22:00</em><span>Montag</span></p>
+                <p class="e-otimes"><em>24 Stunden</em><span>Dienstag</span></p>
+                <p class="e-otimes"><em>Geschlossen</em><span>Sonntag</span></p>
+            </section>
+            </body></html>
+            HTML;
 
         Http::fake([
             'https://geocoder.test/*' => Http::response([[
-                'display_name' => '36100 Petersberg, Hessen, Deutschland',
-                'lat' => '50.55923',
-                'lon' => '9.71252',
+                'address' => ['village' => 'Petersberg', 'county' => 'Landkreis Fulda'],
             ]]),
-            'https://overpass.test/*' => Http::response([
-                'elements' => [
-                    [
-                        'type' => 'node',
-                        'id' => 123456,
-                        'lat' => 50.5512,
-                        'lon' => 9.6751,
-                        'tags' => [
-                            'amenity' => 'fuel',
-                            'name' => 'ARAL',
-                            'brand' => 'ARAL',
-                            'addr:street' => 'Leipziger Straße',
-                            'addr:housenumber' => '12a',
-                            'addr:postcode' => '36037',
-                            'addr:city' => 'Fulda',
-                            'fuel:e10' => 'yes',
-                            'fuel:diesel' => 'yes',
-                            'opening_hours' => 'Mo-Su 06:00-22:00',
-                        ],
-                    ],
-                    [
-                        'type' => 'node',
-                        'id' => 999999,
-                        'lat' => 50.5520,
-                        'lon' => 9.6760,
-                        'tags' => ['amenity' => 'fuel', 'name' => 'Freiwillige Feuerwehr'],
-                    ],
-                ],
-            ]),
+            'https://benzin.test/36100-petersberg-aktuelle-dieselpreise*' => Http::response($searchHtml),
+            'https://benzin.test/preise-tabc12-petersberg-aral' => Http::response($detailHtml),
         ]);
 
-        $result = app(StationLookupService::class)->searchByPostalCode('36100', 25);
-        $station = $result['stations'][0];
+        $result = app(StationLookupService::class)->searchByPostalCode('36100', 20);
 
-        $this->assertSame(25, $result['radius_km']);
-        $this->assertCount(1, $result['stations']);
-        $this->assertSame('openstreetmap', $station['source_provider']);
-        $this->assertSame('node/123456', $station['source_station_id']);
-        $this->assertSame('ARAL Tankstelle Fulda', $station['name']);
-        $this->assertSame('Leipziger Straße', $station['street']);
-        $this->assertSame('12a', $station['house_number']);
-        $this->assertContains('Super E10', $station['fuel_types']);
-        $this->assertContains('Diesel', $station['fuel_types']);
-        $this->assertSame('Mo-Su 06:00-22:00', $station['opening_hours_raw']);
-        $this->assertNull($station['price_e10']);
+        $this->assertSame(20, $result['radius_km']);
+        $this->assertCount(2, $result['stations']);
+        $this->assertTrue($result['stations'][0]['is_open']);
+        $this->assertFalse($result['stations'][1]['is_open']);
+        $this->assertNull($result['stations'][1]['price_diesel']);
 
-        Http::assertSent(fn (Request $request): bool => $request->url() === 'https://overpass.test/interpreter'
-            && str_contains((string) $request['data'], 'around:25000')
-            && str_contains((string) $request['data'], 'amenity')
+        $station = app(StationLookupService::class)->loadStationDetails($result['stations'][0]);
+
+        $this->assertSame('benzinpreis-aktuell', $station['source_provider']);
+        $this->assertSame('Petersberger Straße', $station['street']);
+        $this->assertSame('101', $station['house_number']);
+        $this->assertSame('36100', $station['postal_code']);
+        $this->assertSame('Petersberg', $station['city']);
+        $this->assertSame(1.799, $station['price_super']);
+        $this->assertSame(1.739, $station['price_e10']);
+        $this->assertSame(1.729, $station['price_diesel']);
+        $this->assertCount(3, $station['opening_hours']);
+
+        Http::assertSent(fn (Request $request): bool => str_contains($request->url(), 'aktuelle-dieselpreise?umkreis=20')
         );
     }
 
-    public function test_it_only_accepts_the_documented_radius_buttons(): void
+    public function test_it_only_accepts_source_supported_radius_buttons(): void
     {
         Http::preventStrayRequests();
 
         $this->expectException(StationLookupException::class);
-        $this->expectExceptionMessage('5, 10, 15, 20 oder 25');
+        $this->expectExceptionMessage('Exakt');
 
-        app(StationLookupService::class)->searchByPostalCode('36100', 12);
+        app(StationLookupService::class)->searchByPostalCode('36100', 15);
     }
 }

@@ -9,7 +9,7 @@ use App\Services\StationLookupService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Notifications\Notification;
@@ -22,8 +22,8 @@ use Illuminate\Support\Str;
 /**
  * Gemeinsamer Anlage-Wizard für Plattform-Admin und Tankstellenpartner.
  *
- * Schritt 1 sucht Stationen in 25 km Entfernung zur eingegebenen PLZ und
- * übernimmt die Auswahl. Schritt 2 zeigt weiterhin das vollständige
+ * Schritt 1 sucht bei Benzinpreis-Aktuell.de nach Stationen zur eingegebenen
+ * PLZ und übernimmt die Auswahl. Schritt 2 zeigt weiterhin das vollständige
  * Stammdatenformular, damit alle automatisch erkannten Werte geprüft und
  * betriebliche Zusatzangaben direkt ergänzt werden können.
  */
@@ -57,11 +57,11 @@ trait HasStationCreationWizard
                     ToggleButtons::make('station_search_radius')
                         ->label('Umkreis festlegen')
                         ->options([
+                            0 => 'Exakt',
+                            3 => '3 km',
                             5 => '5 km',
                             10 => '10 km',
-                            15 => '15 km',
                             20 => '20 km',
-                            25 => '25 km',
                         ])
                         ->default(5)
                         ->inline()
@@ -79,11 +79,14 @@ trait HasStationCreationWizard
                         ->content(fn ($livewire): string => $livewire->getStationSearchSummary()),
                     Placeholder::make('station_search_attribution')
                         ->hiddenLabel()
-                        ->content(new HtmlString('Standortdaten: &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap-Mitwirkende</a> (ODbL).')),
-                    Radio::make('station_search_result')
+                        ->content(new HtmlString('Tankstellendaten: <a href="https://www.benzinpreis-aktuell.de" target="_blank" rel="noopener noreferrer">Benzinpreis-Aktuell.de</a>.')),
+                    Select::make('station_search_result')
                         ->label('Tankstelle auswählen')
+                        ->placeholder('Name, Marke oder Straße durchsuchen ...')
                         ->options(fn ($livewire): array => $livewire->getStationSearchOptions())
-                        ->descriptions(fn ($livewire): array => $livewire->getStationSearchDescriptions())
+                        ->searchable()
+                        ->allowHtml()
+                        ->native(false)
                         ->visible(fn ($livewire): bool => $livewire->stationSearchResults !== [])
                         ->required()
                         ->live()
@@ -102,10 +105,7 @@ trait HasStationCreationWizard
         ];
     }
 
-    /**
-     * Führt die Suche aus. Der API-Schlüssel verbleibt dabei ausschließlich
-     * auf dem Server und wird niemals an den Browser des Partners ausgeliefert.
-     */
+    /** Führt die zwischengespeicherte Umkreissuche auf dem Laravel-Server aus. */
     public function searchNearbyStations(): void
     {
         $postalCode = trim((string) data_get($this->data, 'station_search_postal_code'));
@@ -149,30 +149,34 @@ trait HasStationCreationWizard
             ->send();
     }
 
-    /** @return array<string, string> */
+    /** @return array<string, array<string, string>> */
     public function getStationSearchOptions(): array
     {
-        return collect($this->stationSearchResults)
-            ->mapWithKeys(function (array $station): array {
-                $brandOrName = filled($station['brand'] ?? null) ? $station['brand'] : $station['name'];
-                $distance = number_format((float) $station['distance_km'], 1, ',', '.');
+        $stations = collect($this->stationSearchResults);
 
-                return [(string) $station['source_station_id'] => "{$brandOrName} · {$distance} km"];
-            })
-            ->all();
-    }
+        $format = function (array $station): array {
+            $address = trim("{$station['street']} {$station['house_number']} {$station['postal_code']} {$station['city']}");
+            $name = e((string) $station['name']);
+            $safeAddress = e($address);
+            $brandLogo = $this->stationBrandLogo((string) ($station['brand'] ?? $station['name']));
 
-    /** @return array<string, string> */
-    public function getStationSearchDescriptions(): array
-    {
-        return collect($this->stationSearchResults)
-            ->mapWithKeys(function (array $station): array {
-                $address = trim("{$station['street']} {$station['house_number']}, {$station['postal_code']} {$station['city']}", ' ,');
-                $address = $address !== '' ? $address : 'Adresse in OpenStreetMap nicht vollständig hinterlegt';
+            $label = <<<HTML
+                <span class="station-search-option">
+                    {$brandLogo}
+                    <span class="station-search-option__content">
+                        <strong>{$name}</strong>
+                        <small>{$safeAddress}</small>
+                    </span>
+                </span>
+                HTML;
 
-                return [(string) $station['source_station_id'] => $address];
-            })
-            ->all();
+            return [(string) $station['source_station_id'] => $label];
+        };
+
+        return [
+            'Geöffnete Tankstellen' => $stations->where('is_open', true)->mapWithKeys($format)->all(),
+            'Geschlossen / kein Dieselpreis' => $stations->where('is_open', false)->mapWithKeys($format)->all(),
+        ];
     }
 
     public function getStationSearchSummary(): string
@@ -181,12 +185,14 @@ trait HasStationCreationWizard
             return 'Noch keine Suche ausgeführt.';
         }
 
-        return sprintf(
-            '%d Tankstellen im Umkreis von %d km um %s.',
-            count($this->stationSearchResults),
-            $this->stationSearchRadiusKm,
-            $this->stationSearchLocation,
-        );
+        return $this->stationSearchRadiusKm === 0
+            ? sprintf('%d Tankstellen exakt in %s.', count($this->stationSearchResults), $this->stationSearchLocation)
+            : sprintf(
+                '%d Tankstellen im Umkreis von %d km um %s.',
+                count($this->stationSearchResults),
+                $this->stationSearchRadiusKm,
+                $this->stationSearchLocation,
+            );
     }
 
     /**
@@ -206,6 +212,18 @@ trait HasStationCreationWizard
             return;
         }
 
+        try {
+            $station = app(StationLookupService::class)->loadStationDetails($station);
+        } catch (StationLookupException $exception) {
+            Notification::make()
+                ->danger()
+                ->title('Tankstellendetails nicht verfügbar')
+                ->body($exception->getMessage())
+                ->send();
+
+            return;
+        }
+
         $this->data = array_replace($this->data ?? [], [
             'source_provider' => $station['source_provider'],
             'source_station_id' => $station['source_station_id'],
@@ -219,13 +237,16 @@ trait HasStationCreationWizard
             'latitude' => $station['latitude'],
             'longitude' => $station['longitude'],
             'fuel_types' => $station['fuel_types'] ?? [],
+            'opening_hours' => $station['opening_hours'] ?? [],
             'price_super' => $station['price_super'],
             'price_e10' => $station['price_e10'],
             'price_diesel' => $station['price_diesel'],
             'prices_updated_at' => $station['prices_updated_at'],
-            'settings' => filled($station['opening_hours_raw'] ?? null)
-                ? ['osm_opening_hours' => $station['opening_hours_raw']]
-                : [],
+            'settings' => array_filter([
+                'benzinpreis_detail' => $station['source_detail_slug'] ?? null,
+                'benzinpreis_mts_id' => $station['source_mts_id'] ?? null,
+                'benzinpreis_url' => $station['source_url'] ?? null,
+            ]),
         ]);
 
         Notification::make()
@@ -269,5 +290,41 @@ trait HasStationCreationWizard
     private function normalizeBrandName(string $brand): string
     {
         return preg_replace('/[^a-z0-9]+/', '', strtolower(Str::ascii($brand))) ?? '';
+    }
+
+    /**
+     * Erstellt ein kompaktes, markenbezogenes Erkennungszeichen für die
+     * Suchauswahl. So bleibt die Liste auch ohne eingeblendete Preise schnell
+     * erfassbar. Für unbekannte Marken wird ein neutrales Tankstellenzeichen
+     * verwendet.
+     */
+    private function stationBrandLogo(string $brand): string
+    {
+        $normalizedBrand = $this->normalizeBrandName($brand);
+        $brandStyles = [
+            'aral' => ['AR', '#0050aa', '#ffffff'],
+            'shell' => ['SH', '#ffd500', '#d71920'],
+            'totalenergies' => ['TE', '#ed1b2f', '#ffffff'],
+            'esso' => ['ES', '#ffffff', '#005daa'],
+            'jet' => ['JET', '#ffd100', '#003b70'],
+            'eniagip' => ['ENI', '#ffd500', '#111827'],
+            'raiffeisen' => ['R', '#ffcc00', '#111827'],
+            'globus' => ['G', '#d71920', '#ffffff'],
+            'star' => ['★', '#e30613', '#ffffff'],
+            'bft' => ['bft', '#e30613', '#ffffff'],
+            'avia' => ['A', '#e30613', '#ffffff'],
+        ];
+
+        $style = collect($brandStyles)
+            ->first(fn (array $style, string $key): bool => str_contains($normalizedBrand, $key));
+
+        [$shortName, $background, $foreground] = $style ?? ['⛽', '#e8f1ff', '#0050aa'];
+
+        return sprintf(
+            '<span class="station-search-option__logo" style="--station-logo-bg:%s;--station-logo-color:%s" aria-hidden="true">%s</span>',
+            $background,
+            $foreground,
+            e($shortName),
+        );
     }
 }

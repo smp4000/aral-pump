@@ -15,8 +15,9 @@ und einer MySQL-kompatiblen Datenbank.
 - getrennte Filament-Bereiche für Plattform-Administration und Partner
 - zentrale Verwaltung aller Partner, Benutzer und Tankstellen
 - Partnerverwaltung der ausschließlich eigenen Tankstellen
-- geführter Anlage-Wizard: PLZ-Suche mit 5/10/15/20/25-km-Auswahl
-- automatische Übernahme von Marke, Adresse, GPS-Position und Kraftstoffarten
+- geführter Anlage-Wizard: PLZ-Suche mit Exakt/3/5/10/20-km-Auswahl
+- offene und aktuell geschlossene Tankstellen in derselben Ergebnisliste
+- automatische Übernahme von Marke, Adresse, GPS, Preisen, Kraftstoffarten und Öffnungszeiten
 - vollständige Tankstellen-Stammdaten in gegliederten Formular-Tabs
 - zentral gepflegte Markenliste mit 30 Marken, Reihenfolge, Farben und Logos
 - öffentliche Stations-UUID, Soft Deletes und unveränderliches Audit-Log
@@ -42,22 +43,22 @@ Die Standardkonfiguration erwartet die lokale Datenbank `aral_pump` auf Port
 
 ### Tankstellensuche einrichten
 
-Der Anlage-Wizard nutzt OpenStreetMap-Standortdaten. Nominatim löst die
-eingegebene Postleitzahl auf, Overpass sucht Tankstellen im gewählten Radius.
-Es ist kein Tankerkönig-Schlüssel erforderlich. Echtzeitpreise gehören bewusst
-nicht zu dieser Standortquelle und bleiben bei der Anlage leer.
+Der Anlage-Wizard nutzt Benzinpreis-Aktuell.de als alleinige Quelle für alle
+fachlichen Tankstellen- und Preisdaten. Nominatim wird nur verwendet, um aus
+der eingegebenen PLZ den für die Quell-URL erforderlichen Ortsnamen zu bilden.
+Die Ergebnisliste enthält auch die von der Quelle separat aufgeführten aktuell
+geschlossenen Stationen bzw. Stationen ohne gemeldeten Dieselpreis.
 
 ```dotenv
 STATION_GEOCODER_URL=https://nominatim.openstreetmap.org/search
-OVERPASS_API_URL=https://overpass-api.de/api/interpreter
-OPENSTREETMAP_USER_AGENT="StationDesk/1.0 (+https://ihre-domain.de; kontakt@ihre-domain.de)"
+BENZINPREIS_AKTUELL_URL=https://www.benzinpreis-aktuell.de
+BENZINPREIS_AKTUELL_USER_AGENT="StationDesk/1.0 (+https://ihre-domain.de; kontakt@ihre-domain.de)"
 ```
 
 Nach einer Konfigurationsänderung muss `php artisan config:clear` ausgeführt
-werden. Suchergebnisse werden zwischengespeichert, die OSM-Attribution wird im
-Wizard angezeigt und die externe Stations-ID verhindert Dubletten. Für einen
-größeren Produktivbetrieb sollten eigene oder kommerzielle Geocoding- und
-Overpass-Instanzen konfiguriert werden.
+werden. Listen werden 15 Minuten und Detailseiten 30 Minuten zwischengespeichert.
+Die sichtbare Quellenangabe nennt Benzinpreis-Aktuell.de; die externe Stations-ID
+verhindert Dubletten und ermöglicht spätere Aktualisierungen.
 
 ## Zugänge
 
@@ -65,6 +66,7 @@ Overpass-Instanzen konfiguriert werden.
 - Landingpage-Pflege: `/admin/landing-page-settings`
 - Partnerbereich: `/partner`
 - Partnerregistrierung: `/partner/register`
+- Partner-Login: `/partner/login`
 
 Der erste Plattform-Administrator wird beim Seeding aus diesen Variablen erzeugt:
 
@@ -76,6 +78,15 @@ PLATFORM_ADMIN_PASSWORD=password
 
 Das Standardpasswort ist ausschließlich für die lokale Entwicklung gedacht und
 muss vor einem erreichbaren Test- oder Produktivbetrieb geändert werden.
+
+Für lokale Oberflächentests kann der Seeder zusätzlich einen Demo-Partner
+anlegen. Dieser Zugang ist in Produktion zwingend zu deaktivieren:
+
+```dotenv
+DEMO_PARTNER_ENABLED=true
+DEMO_PARTNER_EMAIL=partner@stationdesk.local
+DEMO_PARTNER_PASSWORD=password
+```
 
 ## Qualitätssicherung
 

@@ -1,0 +1,381 @@
+@import '../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../app/Filament/**/*';
+@source '../../../resources/views/filament/**/*';
+
+/*
+ * Kompakte Tankstellenauswahl: Markenzeichen, Name und Adresse bilden eine
+ * klar erfassbare Einheit. Preise bleiben im Wizard bewusst ausgeblendet.
+ */
+.station-search-option {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.75rem;
+    padding-block: 0.2rem;
+}
+
+.station-search-option__logo {
+    display: inline-flex;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: 0 0 2.25rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgb(148 163 184 / 22%);
+    border-radius: 0.75rem;
+    background: var(--station-logo-bg);
+    color: var(--station-logo-color);
+    box-shadow: 0 5px 14px rgb(15 23 42 / 10%);
+    font-size: 0.66rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+}
+
+.station-search-option__content {
+    display: grid;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.station-search-option__content strong,
+.station-search-option__content small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.station-search-option__content strong {
+    color: rgb(15 23 42);
+    font-size: 0.875rem;
+}
+
+.station-search-option__content small {
+    margin-top: 0.2rem;
+    color: rgb(100 116 139);
+    font-size: 0.75rem;
+}
+
+/* Gemeinsames, Aral-blaues StationDesk-Design für beide Filament-Bereiche. */
+:root {
+    --station-blue: #0050aa;
+    --station-blue-soft: #eef4ff;
+    --station-cyan: #20aee8;
+    --station-ink: #111827;
+    --station-muted: #6b7280;
+    --station-canvas: #f8fafc;
+}
+
+html { background: var(--station-canvas); }
+
+.fi-body {
+    background: var(--station-canvas);
+    color: var(--station-ink);
+}
+
+.fi-main { padding-block: 1.75rem; }
+.fi-page { gap: 1.35rem; }
+
+.fi-header-heading {
+    color: var(--station-ink);
+    font-size: clamp(1.65rem, 2vw, 2.15rem);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+}
+
+.fi-header-subheading { color: var(--station-muted); }
+
+/* Dunkle Navigation mit klar hervorgehobenem aktivem Modul. */
+.fi-sidebar {
+    background: #fff;
+    border-right: 1px solid rgb(226 232 240 / 90%);
+    box-shadow: none;
+}
+
+.fi-sidebar-header {
+    background: #fff;
+    border-bottom: 1px solid rgb(226 232 240 / 90%);
+    box-shadow: none;
+}
+
+.fi-sidebar-nav { padding: 1.2rem 0.85rem 2rem; }
+
+.fi-sidebar-group-label {
+    color: #9ca3af;
+    font-size: 0.67rem;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+}
+
+.fi-sidebar-item-btn {
+    min-height: 2.6rem;
+    border-radius: 0.65rem;
+    color: #4b5563;
+    transition: 160ms ease;
+}
+
+.fi-sidebar-item-btn:hover {
+    background: #f5f7fb;
+    color: var(--station-blue);
+}
+
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+    background: var(--station-blue-soft);
+    box-shadow: inset 3px 0 var(--station-blue);
+    color: var(--station-blue);
+}
+
+.fi-sidebar-item-icon,
+.fi-sidebar-item-label { color: inherit; }
+
+.fi-sidebar-item-icon {
+    width: 1.1rem;
+    height: 1.1rem;
+    color: #9ca3af;
+    stroke-width: 1.35;
+}
+
+.fi-sidebar-item.fi-active .fi-sidebar-item-icon {
+    color: var(--station-blue);
+}
+
+.fi-logo,
+.fi-sidebar-header .fi-logo { color: var(--station-ink); }
+
+/* Schwebende Topbar und hochwertige Karten statt Standard-Kästen. */
+.fi-topbar {
+    background: #fff;
+    border-bottom: 1px solid rgb(226 232 240 / 90%);
+    box-shadow: none;
+}
+
+.fi-section,
+.fi-wi-stats-overview-stat,
+.fi-ta-ctn,
+.fi-fo-tabs,
+.fi-sc-wizard {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.8rem;
+    box-shadow: 0 1px 3px rgb(15 23 42 / 4%);
+}
+
+.fi-wi-stats-overview-stat {
+    min-height: 7.25rem;
+    overflow: hidden;
+    position: relative;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+/*
+ * Der Anlage-Wizard wird als zusammenhängende Karte dargestellt. Filament
+ * liefert ihn hier uncontained aus, daher ergänzen wir den Innenabstand für
+ * Formular und Fußzeile bewusst selbst.
+ */
+.fi-sc-wizard:not(.fi-contained) {
+    overflow: hidden;
+}
+
+.fi-sc-wizard:not(.fi-contained) .fi-sc-wizard-header {
+    border-radius: 0;
+    box-shadow: none;
+    --tw-ring-shadow: 0 0 #0000;
+}
+
+.fi-sc-wizard:not(.fi-contained) .fi-sc-wizard-step.fi-active {
+    margin-top: 0;
+    padding: 1.75rem;
+}
+
+.fi-sc-wizard:not(.fi-contained) .fi-sc-wizard-footer {
+    margin-top: 0;
+    padding: 0 1.75rem 1.75rem;
+}
+
+.fi-wi-stats-overview-stat::before {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: var(--station-blue);
+    content: '';
+}
+
+.fi-wi-stats-overview-stat:hover {
+    border-color: rgb(23 105 224 / 25%);
+    box-shadow: 0 0.65rem 1.8rem rgb(15 43 80 / 8%);
+    transform: translateY(-2px);
+}
+
+.fi-wi-stats-overview-stat-label {
+    color: var(--station-muted);
+    font-size: 0.78rem;
+    font-weight: 750;
+    letter-spacing: 0.035em;
+    text-transform: none;
+}
+
+.fi-wi-stats-overview-stat-value {
+    color: var(--station-ink);
+    font-size: 1.75rem;
+    font-weight: 850;
+    letter-spacing: -0.045em;
+}
+
+.fi-wi-stats-overview-stat .fi-icon {
+    width: 1rem;
+    height: 1rem;
+    stroke-width: 1.25;
+}
+
+.fi-btn.fi-color-primary {
+    background: var(--station-blue);
+    border: 0;
+    border-radius: 0.8rem;
+    box-shadow: 0 0.55rem 1.25rem rgb(0 99 198 / 22%);
+    color: #fff;
+}
+
+.fi-btn.fi-color-primary:hover {
+    box-shadow: 0 0.8rem 1.6rem rgb(0 99 198 / 30%);
+    transform: translateY(-1px);
+}
+
+/* Bei Toggle-Buttons wird ausschließlich die gewählte Option gefüllt. */
+.fi-fo-toggle-buttons-input:not(:checked) + .fi-btn.fi-color-primary {
+    border: 1px solid #dbe1ea;
+    background: #fff;
+    box-shadow: none;
+    color: #4b5563;
+}
+
+.fi-fo-toggle-buttons-input:not(:checked) + .fi-btn.fi-color-primary:hover {
+    border-color: #adc5ef;
+    background: #f5f8ff;
+    box-shadow: none;
+    color: var(--station-blue);
+    transform: none;
+}
+
+.fi-input-wrp,
+.fi-select-input,
+.fi-fo-toggle-buttons { border-radius: 0.8rem; }
+
+.fi-input-wrp:focus-within { box-shadow: 0 0 0 3px rgb(0 99 198 / 13%); }
+.fi-fo-tabs-tab.fi-active,
+.fi-sc-wizard-header-step.fi-active { color: var(--station-blue); }
+
+/* Aktiver und abgeschlossener Schritt verwenden konsequent Aral-Blau. */
+.fi-sc-wizard-header-step.fi-active .fi-sc-wizard-header-step-icon-ctn {
+    border-color: var(--station-blue);
+}
+
+.fi-sc-wizard-header-step.fi-active .fi-sc-wizard-header-step-icon-ctn .fi-icon,
+.fi-sc-wizard-header-step.fi-active .fi-sc-wizard-header-step-label {
+    color: var(--station-blue);
+}
+
+.fi-sc-wizard-header-step.fi-completed .fi-sc-wizard-header-step-icon-ctn {
+    border-color: var(--station-blue);
+    background: var(--station-blue);
+}
+
+.fi-sc-wizard-header-step.fi-completed .fi-sc-wizard-header-step-icon-ctn .fi-icon {
+    color: #fff;
+}
+
+/* Kompakte Schnellaktionen wie im gewünschten Partner-Dashboard. */
+.station-quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.station-quick-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid #cddcff;
+    border-radius: 0.65rem;
+    background: #f4f7ff;
+    color: #315fd6;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    transition: 160ms ease;
+}
+
+.station-quick-action:hover {
+    border-color: #9eb8ff;
+    background: #eaf0ff;
+    transform: translateY(-1px);
+}
+
+.station-quick-action svg {
+    width: 1rem;
+    height: 1rem;
+    stroke-width: 1.35;
+}
+
+/* Login und Registrierung wirken wie eigenständige Produktseiten. */
+.fi-simple-layout {
+    background:
+        radial-gradient(circle at 12% 12%, rgb(32 184 233 / 26%), transparent 28rem),
+        linear-gradient(145deg, #06172e 0%, #063b75 52%, #087bc4 100%);
+}
+
+.fi-simple-main {
+    background: rgb(255 255 255 / 94%);
+    border: 1px solid rgb(255 255 255 / 45%);
+    border-radius: 1.5rem;
+    box-shadow: 0 2rem 5rem rgb(0 20 50 / 28%);
+    backdrop-filter: blur(20px);
+}
+
+.station-desk-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    color: inherit;
+    font-size: 1.05rem;
+    font-weight: 850;
+    letter-spacing: -0.025em;
+}
+
+.station-desk-logo-mark {
+    display: grid;
+    width: 2.1rem;
+    height: 2.1rem;
+    place-items: center;
+    background: linear-gradient(145deg, #1bb6eb, #0063c6);
+    border-radius: 0.72rem;
+    box-shadow: 0 0.5rem 1rem rgb(0 99 198 / 28%);
+    color: white;
+}
+
+.station-desk-logo small {
+    display: block;
+    color: #82b7e9;
+    font-size: 0.61rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+@media (max-width: 767px) {
+    .fi-main { padding-block: 1.25rem; }
+    .fi-section,
+    .fi-wi-stats-overview-stat,
+    .fi-ta-ctn,
+    .fi-fo-tabs,
+    .fi-sc-wizard { border-radius: 0.9rem; }
+
+    .fi-sc-wizard:not(.fi-contained) .fi-sc-wizard-step.fi-active {
+        padding: 1.1rem;
+    }
+
+    .fi-sc-wizard:not(.fi-contained) .fi-sc-wizard-footer {
+        padding: 0 1.1rem 1.1rem;
+    }
+}

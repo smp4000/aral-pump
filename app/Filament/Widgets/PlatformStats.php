@@ -17,10 +17,25 @@ class PlatformStats extends StatsOverviewWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('Partner', Partner::query()->count()),
-            Stat::make('Tankstellen', Station::query()->count()),
-            Stat::make('Mitarbeiter & Benutzer', User::query()->whereNot('role', 'platform_admin')->count()),
+            Stat::make('Partner', Partner::query()->count())
+                ->description('Registrierte Mandanten')
+                ->descriptionIcon('heroicon-m-building-office-2')
+                ->icon('heroicon-o-building-office-2')
+                ->color('primary'),
+            Stat::make('Tankstellen', Station::query()->count())
+                ->description('Standorte auf der Plattform')
+                ->descriptionIcon('heroicon-m-map-pin')
+                ->icon('heroicon-o-building-storefront')
+                ->color('info'),
+            Stat::make('Mitarbeiter & Benutzer', User::query()->whereNot('role', 'platform_admin')->count())
+                ->description('Partnerzugänge insgesamt')
+                ->descriptionIcon('heroicon-m-users')
+                ->icon('heroicon-o-user-group')
+                ->color('success'),
             Stat::make('Aktive Testphasen', Partner::query()->where('status', 'trial')->where('trial_ends_at', '>', now())->count())
+                ->description('30-Tage-Testkonten')
+                ->descriptionIcon('heroicon-m-clock')
+                ->icon('heroicon-o-sparkles')
                 ->color('warning'),
         ];
     }

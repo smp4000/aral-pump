@@ -27,9 +27,14 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->brandName('Station Desk · Plattform')
+            ->brandName('StationDesk Control Center')
+            ->brandLogo(fn () => view('filament.brand-logo'))
+            ->brandLogoHeight('2.5rem')
+            ->viteTheme('resources/css/filament/station-desk.css')
+            ->sidebarWidth('18rem')
+            ->maxContentWidth('full')
             ->colors([
-                'primary' => Color::Blue,
+                'primary' => Color::hex('#0050AA'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
