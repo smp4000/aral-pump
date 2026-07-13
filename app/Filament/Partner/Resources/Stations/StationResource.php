@@ -28,7 +28,7 @@ class StationResource extends Resource
 {
     protected static ?string $model = Station::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMapPin;
 
     protected static ?string $modelLabel = 'Tankstelle';
 
